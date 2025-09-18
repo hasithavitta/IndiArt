@@ -1,0 +1,7 @@
+{
+  "name": "IndiArt Marketing Assistant",
+  "description": "An AI-powered assistant that helps local artisans market their craft by generating compelling product stories, marketing content, and providing market insights from a simple description and product image.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
