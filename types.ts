@@ -1,4 +1,5 @@
-export type ContentType = 'social' | 'description' | 'email' | 'blog' | 'seo' | 'video';
+
+export type ContentType = 'social' | 'description' | 'email' | 'blog' | 'seo';
 
 export const CONTENT_TYPES: ContentType[] = [
   'social',
@@ -6,7 +7,6 @@ export const CONTENT_TYPES: ContentType[] = [
   'email',
   'blog',
   'seo',
-  'video',
 ];
 
 export type Language = 'en' | 'hi' | 'bn' | 'ta' | 'te' | 'mr';
@@ -20,21 +20,14 @@ export const LANGUAGES: Language[] = [
   'mr'
 ];
 
-
 // e.g., { social: "...", description: "..." }
-export type GeneratedContentSet = Partial<Record<Exclude<ContentType, 'video'>, string>>;
+export type GeneratedContentSet = Partial<Record<ContentType, string>>;
 
 // The part of the analysis that gets translated
 export interface TranslatedAnalysis {
     targetAudience: string;
     sellingPoints: string[];
     sentiment: string;
-}
-
-// The part of the analysis that is NOT translated
-export interface VideoSuggestions {
-    caption: string;
-    audioSuggestion: string;
 }
 
 // A single payload for one language
@@ -46,8 +39,6 @@ export interface LocalizedPayload {
 // The full set of localized data, keyed by language code
 export type LocalizedData = Partial<Record<Language, LocalizedPayload>>;
 
-
 export interface OutputData {
   localizedData: LocalizedData;
-  videoSuggestions?: VideoSuggestions;
 }

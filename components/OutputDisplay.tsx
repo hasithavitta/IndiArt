@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { ContentCard } from './ContentCard';
 import type { OutputData, Language, ContentType } from '../types';
@@ -9,10 +10,6 @@ interface OutputDisplayProps {
   isLoading: boolean;
   error: string | null;
   onStartOver: () => void;
-  isVideoLoading: boolean;
-  videoLoadingStatus: string;
-  videoUrl: string | null;
-  videoError: string | null;
   outputPageIndex: number;
   onNextOutput: () => void;
   onBackOutput: () => void;
@@ -20,7 +17,6 @@ interface OutputDisplayProps {
 
 type OutputPage = 
     | { type: 'analysis'; titleKey: string }
-    | { type: 'video'; titleKey: string }
     | { type: 'content'; titleKey: ContentType; contentType: ContentType };
 
 
@@ -37,22 +33,6 @@ const LoadingSpinner = () => {
         </div>
     );
 };
-
-const VideoGenerationStatus = ({ status }: { status: string }) => {
-    const { t } = useLanguage();
-    return (
-        <ContentCard title={t('output_video_loading_title')}>
-            <div className="flex flex-col items-center justify-center p-4 text-center">
-                <svg className="animate-spin h-8 w-8 text-brand-accent mb-4 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p className="text-gray-500 text-lg">{status}</p>
-            </div>
-        </ContentCard>
-    );
-};
-
 
 const ErrorDisplay = ({ message }: { message: string }) => {
     const { t } = useLanguage();
@@ -75,8 +55,8 @@ const ErrorDisplay = ({ message }: { message: string }) => {
 
 
 export const OutputDisplay: React.FC<OutputDisplayProps> = ({ 
-    output, isLoading, error, onStartOver, isVideoLoading, videoLoadingStatus, 
-    videoUrl, videoError, outputPageIndex, onNextOutput, onBackOutput 
+    output, isLoading, error, onStartOver,
+    outputPageIndex, onNextOutput, onBackOutput 
 }) => {
   const { t: uiT, tLanguage } = useLanguage(); // Translator for the main UI
   const [selectedLang, setSelectedLang] = useState<Language>('en');
@@ -97,21 +77,16 @@ export const OutputDisplay: React.FC<OutputDisplayProps> = ({
     if (output?.localizedData && Object.keys(output.localizedData).length > 0) {
         pages.push({ type: 'analysis', titleKey: 'output_analysis_title' });
     }
-    if (isVideoLoading || videoUrl || videoError) {
-        pages.push({ type: 'video', titleKey: 'output_video_title' });
-    }
     if (output && availableLangs.length > 0) {
       const firstLangWithContent = output.localizedData[availableLangs[0]];
       if (firstLangWithContent?.content) {
         (Object.keys(firstLangWithContent.content) as ContentType[]).forEach(ct => {
-            if (ct !== 'video') {
-              pages.push({ type: 'content', titleKey: ct, contentType: ct });
-            }
+            pages.push({ type: 'content', titleKey: ct, contentType: ct });
         });
       }
     }
     return pages;
-  }, [output, isVideoLoading, videoUrl, videoError, availableLangs]);
+  }, [output, availableLangs]);
 
 
   if (isLoading && !output) {
@@ -174,34 +149,6 @@ export const OutputDisplay: React.FC<OutputDisplayProps> = ({
                     </ContentCard>
                 </div>
             );
-        case 'video':
-            if (videoError) return <ErrorDisplay message={videoError} />;
-            if (isVideoLoading) return <VideoGenerationStatus status={videoLoadingStatus} />;
-            if (videoUrl) {
-                return (
-                    <div className="space-y-6">
-                        <ContentCard title={currentPageTitle}>
-                            <video controls playsInline className="w-full rounded-md aspect-[9/16] bg-black" src={videoUrl}>
-                                {contentT('output_video_unsupported')}
-                            </video>
-                            <a 
-                                href={videoUrl} 
-                                download={`artisan_video_${Date.now()}.mp4`}
-                                className="mt-4 inline-block bg-brand-accent text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition"
-                            >
-                                {contentT('output_video_download_button')}
-                            </a>
-                        </ContentCard>
-                        {output?.videoSuggestions && (
-                            <div className="space-y-4">
-                                <ContentCard title={contentT('output_video_caption_title')} content={output.videoSuggestions.caption} lang="en" />
-                                <ContentCard title={contentT('output_video_audio_title')} content={output.videoSuggestions.audioSuggestion} lang="en" />
-                            </div>
-                        )}
-                    </div>
-                );
-            }
-            return null;
         case 'content':
             const contentText = currentLangData?.content?.[currentPage.contentType];
             return (
@@ -246,7 +193,7 @@ export const OutputDisplay: React.FC<OutputDisplayProps> = ({
 
       {error && <ErrorDisplay message={error} />}
       
-      {!error && (output || isVideoLoading) && (
+      {!error && output && (
         <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg animate-fade-in space-y-6">
             <div className="flex justify-between items-center text-sm text-gray-600">
                 <h3 className="font-serif font-semibold text-xl text-brand-primary">{currentPageTitle}</h3>

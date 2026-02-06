@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import type { Language } from '../types';
@@ -39,7 +40,7 @@ const ReadAloudButton = ({ text, lang }: { text: string; lang: Language }) => {
         </svg>
       ) : (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10 3.612A.75.75 0 0110.75 3h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 0110 3.612zM12.25 5.75a.75.75 0 00-1.5 0v8.5a.75.75 0 001.5 0v-8.5zM7.75 5.75a.75.75 0 00-1.5 0v8.5a.75.75 0 001.5 0v-8.5zM4.25 8.75a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5zM17.25 8.75a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z" />
+          <path d="M10 3.612A.75.75 0 0110.75 3h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 0110 3.612zM12.25 5.75a.75.75 0 00-1.5 0v8.5a.75.75 0 001.5 0v-8.5zM7.75 5.75a.75.75 0 00-1.5 0v8.5a.75.75 0 001.5 0v-8.5zM4.25 8.75a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5zM17.25 8.75a.75.75 0 00-1.5 0v2.5a.75.75 0 00-1.5 0v-2.5z" />
         </svg>
       )}
     </button>
@@ -71,7 +72,8 @@ export const ContentCard: React.FC<ContentCardProps> = ({ title, content, childr
       <div className="p-5 flex justify-between items-start bg-gray-50/50 border-b border-gray-200">
         <h3 className="text-lg font-serif font-semibold text-brand-primary">{title}</h3>
         <div className="flex items-center space-x-2">
-            {textToSpeak && <ReadAloudButton text={textToSpeak} lang={lang} />}
+            {/* Cast lang to Language to ensure type compatibility with ReadAloudButton */}
+            {textToSpeak && <ReadAloudButton text={textToSpeak} lang={lang as Language} />}
             {content && !isAnalysis && (
             <button
                 onClick={handleCopy}

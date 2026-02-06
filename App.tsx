@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { OutputDisplay } from './components/OutputDisplay';
-import { generateMarketingContent, generateVideo } from './services/geminiService';
+import { generateMarketingContent } from './services/geminiService';
 import type { ContentType, Language, OutputData } from './types';
 import { Step1_Description } from './components/Step1_Description';
 import { Step2_Image } from './components/Step2_Image';
@@ -29,12 +30,6 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [outputPageIndex, setOutputPageIndex] = useState(0);
 
-  // Video-specific state
-  const [isVideoLoading, setIsVideoLoading] = useState<boolean>(false);
-  const [videoLoadingStatus, setVideoLoadingStatus] = useState<string>('');
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [videoError, setVideoError] = useState<string | null>(null);
-
   const handleLanguageSelect = (lang: Language) => {
     setLanguage(lang);
     setLanguageSelected(true);
@@ -58,7 +53,7 @@ function App() {
   };
   
   const handleStartOver = () => {
-    setLanguageSelected(false); // Go back to language selection
+    setLanguageSelected(false);
     setStep(1);
     setDescription('');
     setImageFile(null);
@@ -69,10 +64,6 @@ function App() {
     setError(null);
     setIsLoading(false);
     setOutputPageIndex(0);
-    setIsVideoLoading(false);
-    setVideoLoadingStatus('');
-    setVideoUrl(null);
-    setVideoError(null);
   };
 
   const handleGenerate = async () => {
@@ -81,20 +72,14 @@ function App() {
       return;
     }
 
-    const videoRequested = selectedContentTypes.includes('video');
+    startGeneration();
+  };
 
-    if (videoRequested && !imageFile) {
-        setError("An image is required to generate a video. Please go back to Step 2 to upload one.");
-        setStep(5);
-        return;
-    }
-
+  const startGeneration = async () => {
     setIsLoading(true);
     setOutputPageIndex(0);
     setError(null);
     setOutput(null);
-    setVideoError(null);
-    setVideoUrl(null);
     setStep(5);
 
     try {
@@ -109,23 +94,6 @@ function App() {
       setError(e.message || 'An unknown error occurred while generating content.');
     } finally {
       setIsLoading(false);
-    }
-
-    if (videoRequested && imageFile) {
-        setIsVideoLoading(true);
-        try {
-            const promptForVideo = `Create an engaging, 9:16 vertical short video ad for an artisan product, suitable for Instagram Reels and YouTube Shorts. Description: "${description}". Focus on the craftsmanship and unique qualities.`;
-            const generatedVideoUrl = await generateVideo(
-                promptForVideo,
-                imageFile,
-                setVideoLoadingStatus
-            );
-            setVideoUrl(generatedVideoUrl);
-        } catch (e: any) {
-            setVideoError(e.message || 'An unknown error occurred while generating the video.');
-        } finally {
-            setIsVideoLoading(false);
-        }
     }
   };
 
@@ -145,8 +113,8 @@ function App() {
         </div>
       );
     }
-    
-    const showOutput = step > 4 || isLoading || isVideoLoading;
+
+    const showOutput = step > 4 || isLoading;
 
     if (showOutput) {
       return (
@@ -155,10 +123,6 @@ function App() {
           isLoading={isLoading}
           error={error}
           onStartOver={handleStartOver}
-          isVideoLoading={isVideoLoading}
-          videoLoadingStatus={videoLoadingStatus}
-          videoUrl={videoUrl}
-          videoError={videoError}
           outputPageIndex={outputPageIndex}
           onNextOutput={handleNextOutput}
           onBackOutput={handleBackOutput}
@@ -200,7 +164,7 @@ function App() {
             selectedLanguages={selectedLanguages}
             onSelectedLanguagesChange={setSelectedLanguages}
             onGenerate={handleGenerate}
-            isLoading={isLoading || isVideoLoading}
+            isLoading={isLoading}
             onBack={() => setStep(3)}
           />
         );
