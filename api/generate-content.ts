@@ -324,10 +324,13 @@ export default async function handler(
     res.status(200).json(parsedJson);
   } catch (error) {
     // Keep detailed errors in server logs only.
-    console.error('Error generating content:', error);
+    console.error(
+  'Error generating content:',
+  JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+);
 
     res.status(500).json({
-      error: 'Failed to generate marketing content.',
-    });
+  error: 'Failed to generate marketing content.',
+});
   }
 }
