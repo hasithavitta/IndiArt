@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTextToSpeech } from '../hooks/useTextToSpeech';
 import type { Language } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -60,10 +60,17 @@ export const ContentCard: React.FC<ContentCardProps> = ({ title, content, childr
     }
   };
   
-  const analysisTextForSpeech = isAnalysis && children ? 
-    Array.from(document.getElementById(`analysis-content-${title}`)?.querySelectorAll('h4, p, li') || [])
-    .map(el => el.textContent)
-    .join('. ') : '';
+    const contentRef = useRef<HTMLDivElement>(null);
+  const [analysisTextForSpeech, setAnalysisTextForSpeech] = useState('');
+
+  useEffect(() => {
+    if (!isAnalysis || !contentRef.current) return;
+    const text = Array.from(contentRef.current.querySelectorAll('h4, p, li'))
+      .map(el => el.textContent?.trim())
+      .filter(Boolean)
+      .join('. ');
+    setAnalysisTextForSpeech(prev => (prev === text ? prev : text));
+  }, [isAnalysis, children]);
   
   const textToSpeak = content || analysisTextForSpeech;
 
@@ -100,7 +107,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({ title, content, childr
             )}
         </div>
       </div>
-      <div className="p-5 text-brand-text leading-relaxed" id={`analysis-content-${title}`}>
+      <div ref={contentRef} className="p-5 text-brand-text leading-relaxed" id={`analysis-content-${title}`}>
         {content && <p className="whitespace-pre-wrap">{content}</p>}
         {children}
       </div>
